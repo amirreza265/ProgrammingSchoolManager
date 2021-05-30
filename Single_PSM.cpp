@@ -460,7 +460,6 @@ public:
 	void SetExercise(double val);
 	friend double GetStudentExercise(Student s);
 
-	double GetMark();
 	string ToString(int maxNamelen = maxlenName);
 	friend void PrintTopStudents(int count, vector<Student> Students);
 	friend void PrintProvisionalStudents(vector<Student> Students);
@@ -471,6 +470,7 @@ private:
 	double final_term;
 	double project;
 	double exercise;
+	double GetMark();
 
 };
 inline Student::Student(double midTerm, double finalTerm, double proj, double excer)
@@ -630,8 +630,19 @@ string GetStudentsTable(vector<Student> Students)
 
 		sTable.AddRow(row);
 	}
+	string str = sTable.CreateTable();
+	double avg = 0;
+	if (Students.size() > 0)
+	{
+		for (int i = 0; i < Students.size(); i++)
+		{
+			avg += Students[i].GetMark();
+		}
+		avg /= Students.size();
+		str += "Avrage is :" + to_string(avg, 2) + "\n";
+	}
 
-	return sTable.CreateTable();
+	return str;
 }
 
 
@@ -644,7 +655,6 @@ public:
 	Teacher(string name = "", string family = "", int age = 0, GenderType gender = GenderType::male) : Person(name, family, age, gender) { oTime = 0; }
 	static void ChangeBase(long salary);
 	void AddTime(int hour);
-	long long GetSalary();
 	string ToString(int maxNamelen = maxlenName);
 	friend int GetTeacherTime(Teacher t);
 	friend int GetTeacherBaseSalary();
@@ -653,6 +663,7 @@ public:
 private:
 	int oTime;
 	static long baseSalary;
+	long long GetSalary();
 };
 
 long Teacher::baseSalary = 10000;
@@ -709,7 +720,6 @@ string GetTeachersTable(vector<Teacher> Teachers)
 	headers.push_back("Name");
 	headers.push_back("Family");
 	headers.push_back("Age");
-	headers.push_back("Gender");
 	headers.push_back("Time");
 	headers.push_back("Base Salary");
 	headers.push_back("Total Salary");
@@ -721,8 +731,6 @@ string GetTeachersTable(vector<Teacher> Teachers)
 		row.push_back(Teachers[i].Name);
 		row.push_back(Teachers[i].Family);
 		row.push_back(to_string(Teachers[i].Age));
-		char g = char(Teachers[i].Gender);
-		row.push_back(string(1, g));
 
 		string tim = to_string(Teachers[i].oTime);
 		string base = to_string(Teachers[i].baseSalary);
@@ -735,7 +743,18 @@ string GetTeachersTable(vector<Teacher> Teachers)
 		sTable.AddRow(row);
 	}
 
-	return sTable.CreateTable();
+	string table = sTable.CreateTable();
+	long long totalsalalry = 0;
+	if (Teachers.size() > 0)
+	{
+		for (int i = 0; i < Teachers.size(); i++)
+		{
+			totalsalalry += Teachers[i].GetSalary();
+		}
+		table += "Total Salary is : " + to_string(totalsalalry);
+	}
+
+	return table;
 }
 
 
@@ -828,18 +847,8 @@ inline void PSManager::RemoveStudent(string name, string family)
 
 inline string PSManager::DisplayStudents()
 {
-	double avg = 0;
 	string str = "";
 	str += GetStudentsTable(Students);
-	if (Students.size() > 0)
-	{
-		for (int i = 0; i < Students.size(); i++)
-		{
-			avg += Students[i].GetMark();
-		}
-		avg /= Students.size();
-		str += "Avrage is :" + to_string(avg, 2) + "\n";
-	}
 	return str;
 }
 
@@ -869,19 +878,8 @@ inline void PSManager::RemoveTeacher(string name, string family)
 
 inline string PSManager::DisplayTeachers()
 {
-	long long totalsalalry = 0;
 	string str = "";
 	str += GetTeachersTable(Teachers);
-
-	if (Teachers.size() > 0)
-	{
-		for (int i = 0; i < Teachers.size(); i++)
-		{
-			totalsalalry += Teachers[i].GetSalary();
-		}
-		str += "Total Salary is : " + to_string(totalsalalry);
-	}
-
 	return str;
 }
 
@@ -910,16 +908,16 @@ PSCommandProvider::PSCommandProvider(bool addCommand)
 		cout << "add-student: (name) (family) (age) (gender M/F)" << endl;
 		cout << "add-teacher-time:(name)(family)(time:hour)" << endl;
 		cout << "--------------------------------------------------" << endl;
-		cout << "show-teachers:" << endl;
-		cout << "show-students:" << endl;
+		cout << "show-teachers: " << endl;
+		cout << "show-students: " << endl;
 		cout << "show-students-prov: <= Show Provisional Students" << endl;
 		cout << "show-students-top: (count=1)" << endl;
 		cout << "--------------------------------------------------" << endl;
 		cout << "edit-student-score:(name)(family)(midTerm)(final)(exercise)(projects) \n (-1) for each element means dont change score" << endl;
 		cout << "edit-teacher-base-salary:(salary)" << endl;
 		cout << "--------------------------------------------------" << endl;
-		cout << "seed-students: (count=1)" << endl;
-		cout << "seed-teachers: (count=1)" << endl;
+		cout << "seed-students: (count=1) <= add some students to PSM for test" << endl;
+		cout << "seed-teachers: (count=1) <= add some teachers to PSM for test" << endl;
 		cout << "--------------------------------------------------" << endl;
 		cout << "backup-all:(file path)      <= write commands in file for getting backup from teachers and students" << endl;
 		cout << "backup-teachers:(file path) <= write commands in file for getting backup from teachers" << endl;
@@ -1283,6 +1281,8 @@ PSCommandProvider::PSCommandProvider(bool addCommand)
 		}));
 
 	psInstance = *this;
+	RunCommand("seed-students:(50)");
+	RunCommand("seed-teachers:(50)");
 }
 
 
